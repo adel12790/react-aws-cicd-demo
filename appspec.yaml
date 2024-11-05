@@ -1,0 +1,9 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "react-cicd-demo"
+        LoadBalancerInfo:
+          ContainerName: "react-cicd-demo"
+          ContainerPort: 80
