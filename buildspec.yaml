@@ -8,7 +8,8 @@ phases:
       - yarn install
   pre_build:
     commands:
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - echo "Logging into Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 147997150443.dkr.ecr.eu-north-1.amazonaws.com
       - REPOSITORY_URI=147997150443.dkr.ecr.eu-north-1.amazonaws.com/react-cicd-demo
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
