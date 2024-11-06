@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      docker: 27
+      nodejs: 22
     commands:
       - yarn install
   pre_build:
