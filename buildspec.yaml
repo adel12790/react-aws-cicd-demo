@@ -3,19 +3,25 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 22
+      docker: 27
     commands:
       - yarn install
   pre_build:
     commands:
-      - echo "Logging into Amazon ECR..."
-      - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 147997150443.dkr.ecr.eu-north-1.amazonaws.com
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=147997150443.dkr.ecr.eu-north-1.amazonaws.com/react-cicd-demo
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
     commands:
       - echo "Building the Docker image..."
-      - docker build -t react-cicd-demo .
-      - docker tag react-cicd-demo:latest 147997150443.dkr.ecr.eu-north-1.amazonaws.com/react-cicd-demo:latest
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
       - echo "Pushing the Docker image to ECR..."
-      - docker push 147997150443.dkr.ecr.eu-north-1.amazonaws.com/react-cicd-demo:latest
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"react-cicd-demo-task-def","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+  artifacts:
+    files: imagedefinitions.json
